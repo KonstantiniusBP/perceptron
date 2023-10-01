@@ -42,3 +42,6 @@ if __name__ == "__main__":
     for test_input in test_inputs:
         prediction = perceptron.predict(test_input)
         print(f"Input: {test_input}, Prediction: {prediction:.4f}")
+
+        
+print('hello world!')
