@@ -1,6 +1,7 @@
 import numpy as np
-from sklearn.datasets import *
-
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 class PerceptronSigmoid:
     def __init__(self, num_inputs, learning_rate=0.01):
@@ -29,21 +30,45 @@ class PerceptronSigmoid:
                 gradient = input_data * (predicted * (1 - predicted)) * error
                 self.weights += self.learning_rate * gradient
 
-# Пример использования
+    def loss(self, inputs, labels):
+        total_loss = 0
+        for i in range(len(inputs)):
+            input_data = inputs[i]
+            label = labels[i]
+
+            weighted_sum = np.dot(input_data, self.weights)
+            predicted = self.sigmoid(weighted_sum)
+
+            error = label - predicted
+            total_loss += 0.5 * (error ** 2)
+
+        return total_loss / len(inputs)
+
 if __name__ == "__main__":
-    # Обучающие данные для операции "И" (AND)
-    inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    labels = np.array([0, 0, 0, 1])
+    # Загрузка датасета Iris
+    iris = load_iris()
+    X = iris.data
+    y = (iris.target == 0).astype(int)  # Преобразование задачи в бинарную классификацию
+
+    # Разделение данных на обучающий и тестовый наборы
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Создание и обучение перцептрона
-    perceptron = PerceptronSigmoid(num_inputs=2, learning_rate=0.1)
-    perceptron.train(inputs, labels, num_epochs=1000)
+    perceptron = PerceptronSigmoid(num_inputs=4, learning_rate=0.1)
 
-    # Предсказание результатов
-    test_inputs = np.array([[0, 1], [1, 0], [0, 0], [1, 1]])
-    for test_input in test_inputs:
+    num_epochs = 1000
+    for epoch in range(num_epochs):
+        perceptron.train(X_train, y_train, num_epochs=1)  # Обучение на одной эпохе
+        training_loss = perceptron.loss(X_train, y_train)
+        print(f"Epoch {epoch+1}/{num_epochs}, Training Loss: {training_loss:.4f}")
+
+    # Оценка производительности модели на тестовых данных
+    y_pred = []
+    for test_input in X_test:
         prediction = perceptron.predict(test_input)
-        print(f"Input: {test_input}, Prediction: {prediction:.4f}")
+        y_pred.append(round(prediction))
 
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Test Accuracy: {accuracy:.2f}")
 
 
